@@ -22,7 +22,7 @@ int coordinates[2] = {0, 0};
 void setup() {
   Serial.begin(9600);
 
-  motorRR.attach(10);                                                    //RR
+  motorRR.attach(10);                                                   //RR
   motorFR.attach(5);                                                    //FR
   motorRL.attach(6);                                                    //RL 
   motorFL.attach(9);                                                    //FL
@@ -64,10 +64,10 @@ void loop(void) {
     byte pipeNo;   
     while( radio.available(&pipeNo)){                                   // слушаем эфир со всех труб
       radio.read( &coordinates, 32 );                                   // чиатем входящий сигнал
-//      Serial.print("Recieved: "); 
-//      Serial.print(coordinates[0]);
-//      Serial.print(", ");
-//      Serial.println(coordinates[1]);  
+      Serial.print("Recieved: "); 
+      Serial.print(coordinates[0]);
+      Serial.print(", ");
+      Serial.println(coordinates[1]);  
    }
   
   valX = coordinates[0];  
@@ -76,14 +76,12 @@ void loop(void) {
   myServo.write(valY);
   
   if(valY < 90) {                                              // LEFT
-    Serial.print("Left, ");    
     motorRL.writeMicroseconds(valX * valY / 90);
     motorFL.writeMicroseconds(valX * valY / 90);
     motorRR.writeMicroseconds(valX);
     motorFR.writeMicroseconds(valX);
   }
   else if(valY > 90) {                                         // RIGHT
-    Serial.print("Right, ");
     motorRL.writeMicroseconds(valX);
     motorFL.writeMicroseconds(valX);
     motorRR.writeMicroseconds(valX * (180 - valY) / 90);
@@ -95,10 +93,5 @@ void loop(void) {
     motorRR.writeMicroseconds(valX);
     motorFR.writeMicroseconds(valX);
   }
-  
-  Serial.print("X: ");
-  Serial.print(valX);
-  Serial.print(", ");
-  Serial.print("Y: ");
-  Serial.println(valY);
+
 }
