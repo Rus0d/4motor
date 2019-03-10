@@ -40,14 +40,14 @@ void setup(){
 }
 
 void loop(void) {    
-  coordinates[0] = constrain(map(analogRead(0), 1000, 0, -1500, 1500) + map(analogRead(2), 0, 1023, -1500, +1500), -1500, 1500);
+  coordinates[0] = constrain(map(analogRead(0), 1000, 0, -1500, 1500) + map(analogRead(2), 0, 1023, -750, +750), -1500, 1500);
   if (coordinates[0] >= 0) {
     coordinates[0] = coordinates[0] + 800;
   }
   else {
     coordinates[0] = coordinates[0] - 800;
   }
-  coordinates[1] = constrain(map(analogRead(1), 0, 1018, 0, 180) + map(analogRead(7), 0, 1023, -90, 90), map(analogRead(6), 0, 1023, 0, 45), 180 - map(analogRead(6), 0, 1023, 0, 45));
+  coordinates[1] = constrain(map(analogRead(1), 0, 1018, 0, 180) + map(analogRead(7), 0, 1023, -45, 45), map(analogRead(6), 0, 1023, 0, 45), 180 - map(analogRead(6), 0, 1023, 0, 45));
   
   Serial.print(analogRead(0));
   Serial.print(", ");
