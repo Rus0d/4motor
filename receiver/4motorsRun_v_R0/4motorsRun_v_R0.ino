@@ -6,6 +6,9 @@
 #define servoPin 3
 #define servoMinImp 600                                                 // default 544
 #define servoMaxImp 2456                                                // default 2400
+#define motorMinImp 1000
+#define motorMaxImp 2300
+#define serialSpeed 9600 
 
 RF24 radio(8,7);                                                        // "создать" модуль на пинах 9 и 10 Для Уно
 Servo motorRR;                                                          // create a servo object
@@ -20,7 +23,7 @@ int valX = 0;
 int coordinates[2] = {0, 0};
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(serialSpeed);
 
   motorRR.attach(10);                                                   //RR
   motorFR.attach(5);                                                    //FR
@@ -28,16 +31,16 @@ void setup() {
   motorFL.attach(9);                                                    //FL
   myServo.attach(servoPin, servoMinImp, servoMaxImp);
   
-  motorRR.writeMicroseconds(2300);
-  motorFR.writeMicroseconds(2300);
-  motorRL.writeMicroseconds(2300);
-  motorFL.writeMicroseconds(2300);
+  motorRR.writeMicroseconds(motorMaxImp);
+  motorFR.writeMicroseconds(motorMaxImp);
+  motorRL.writeMicroseconds(motorMaxImp);
+  motorFL.writeMicroseconds(motorMaxImp);
   delay(3000);
   
-  motorRR.writeMicroseconds(800);
-  motorFR.writeMicroseconds(800);
-  motorRL.writeMicroseconds(800);
-  motorFL.writeMicroseconds(800);
+  motorRR.writeMicroseconds(motorMinImp);
+  motorFR.writeMicroseconds(motorMinImp);
+  motorRL.writeMicroseconds(motorMinImp);
+  motorFL.writeMicroseconds(motorMinImp);
   myServo.write(90);
   delay(6000);  
 
@@ -62,23 +65,23 @@ void setup() {
 
 void loop(void) {
   byte pipeNo;   
-  while( radio.available(&pipeNo)){                                   // слушаем эфир со всех труб
-    radio.read( &coordinates, 32 );                                   // чиатем входящий сигнал      
-    valX = coordinates[0];  
-    valY = coordinates[1];      
+  while( radio.available(&pipeNo)){                                     // слушаем эфир со всех труб
+    radio.read( &coordinates, 32 );                                     // чиатем входящий сигнал      
+    valX = constrain(map(coordinates[0], 800, 2300, motorMinImp, motorMaxImp), motorMinImp, motorMaxImp);  
+    valY = constrain(map(coordinates[1], 1, 180, -1, 180), 0, 180);      
     myServo.write(valY);
         
     if(valY < 90) {                                                   // LEFT
-      motorRL.writeMicroseconds(constrain((valX * ( valY / 90.0 )), 800, 2300));
-      motorFL.writeMicroseconds(constrain((valX * ( valY / 90.0 )), 800, 2300));
+      motorRL.writeMicroseconds(constrain((valX * ( valY / 90.0 )), motorMinImp, motorMaxImp));
+      motorFL.writeMicroseconds(constrain((valX * ( valY / 90.0 )), motorMinImp, motorMaxImp));
       motorRR.writeMicroseconds(valX);
       motorFR.writeMicroseconds(valX);
     }
     else if(valY > 90) {                                              // RIGHT
       motorRL.writeMicroseconds(valX);
       motorFL.writeMicroseconds(valX);
-      motorRR.writeMicroseconds(constrain((valX * ( map(valY, 91, 180, 89, 0) / 90.0 )), 800, 2300));
-      motorFR.writeMicroseconds(constrain((valX * ( map(valY, 91, 180, 89, 0) / 90.0 )), 800, 2300));
+      motorRR.writeMicroseconds(constrain((valX * ( map(valY, 91, 180, 89, 0) / 90.0 )), motorMinImp, motorMaxImp));
+      motorFR.writeMicroseconds(constrain((valX * ( map(valY, 91, 180, 89, 0) / 90.0 )), motorMinImp, motorMaxImp));
     }
     else {
       motorRL.writeMicroseconds(valX);
@@ -87,19 +90,20 @@ void loop(void) {
       motorFR.writeMicroseconds(valX);
     }
 
-    Serial.print("Recieved: "); 
-    Serial.print(valX);
-    Serial.print(", ");
-    Serial.print(valY);
-    if(valY < 90) {   
-      Serial.print(", L: ");
-      Serial.print(constrain((valX * ( valY / 90.0 )), 800, 2300));
-    }
-    else if(valY > 90) {  
-      Serial.print(", R: ");
-      Serial.print(constrain((valX * ( map(valY, 91, 180, 89, 0) / 90.0 )), 800, 2300));
-    }
-    Serial.println("\r");
-    
+    if(Serial.availableForWrite()) {
+      Serial.print("Recieved: "); 
+      Serial.print(valX);
+      Serial.print(", ");
+      Serial.print(valY);
+      if(valY < 90) {   
+        Serial.print(", L: ");
+        Serial.print(constrain((valX * ( valY / 90.0 )), motorMinImp, motorMaxImp));
+      }
+      else if(valY > 90) {  
+        Serial.print(", R: ");
+        Serial.print(constrain((valX * ( map(valY, 91, 180, 89, 0) / 90.0 )), motorMinImp, motorMaxImp));
+      }
+      Serial.println("\r");    
+    }    
   }  
 }
